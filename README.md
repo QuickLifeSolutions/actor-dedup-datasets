@@ -1,51 +1,24 @@
-# The ultimate dataset processing actor - merge, dedup & transform
+# Ultimate Data Processing Actor: Merge, Dedup & Transform
 
-Refined and optimized dataset processing actor for large scale merging, deduplications and transformation
+This refined and optimized actor is designed for large-scale merging, deduplication, and transformation of datasets.
 
-## Why to use this actor
-- Extremely fast data processing thanks for parallelizing workloads (easily 20x faster than default loading/pushing datasets)
-- Allows reading from multiple datasets silmutanesously, ideal for merging after scraping with many runs
-- Actor migration proof - All steps that can be persisted are persisted => work is not repeated and no duplicated data pushed
-- `Dedup as loading` mode allows for near constant memory processing even for huge datasets (think 10M+)
-- Deduplication allows for combination of many fields and even nested objects/arrays (those are JSON.stringified for deep equality check)
-- Allows for storing into KV store records
-- Allows super fast blank runs that count duplicates
+## Why Use This Actor
+- **Speed:** Experience extremely fast data processing, thanks to parallelized workloads—up to 20x faster than standard methods.
+- **Efficiency:** Read from multiple datasets simultaneously, making it ideal for merging post-scraping.
+- **Reliability:** Actor migration proof with persisted steps, ensuring no repeated work or duplicated data.
+- **Memory Management:** 'Dedup as loading' mode allows for efficient memory usage, even with huge datasets (10M+).
+- **Flexibility:** Deduplicate using multiple fields and nested objects/arrays, with deep equality checks.
+- **Storage Options:** Store results in key-value store records.
+- **Fast Blank Runs:** Quickly identify duplicates without processing data.
 
 ## Merging
-You can provide more than one dataset. In that case all items are merged into single dataset or key value store output. If you use the `Dedup after load` mode, the order of items will retain the order of datasets provided.
+Merge items from multiple datasets into a single dataset or key-value store output. In 'Dedup after load' mode, the order of items retains the order of the provided datasets.
 
 ## Deduplication
-If you optionally provide deduplication `fields`, this actor will deduplicate the dataset items. The deduplication process check the values of each field for equality and only return the first unique one (the first item that has a unique value for that field).
-
-You can provide more than one field. In that case a combined string of that fields is checked, e.g. `"name": "Adidas Shoes, "id": "12345"` gets converted into `"Adidas Shoes12345"` for the checking purpose. So only items that have both fields the same are considered duplicates. This means the more fields you add, the less duplicates will be found.
-
-Fields that are objects or arrays are also deeply compared via `JSON.stringify`. Just be aware that doing this for very large structures might have performance implications.
+Specify fields for deduplication to remove duplicate items based on field values. Combine multiple fields for more precise deduplication. Deep comparison is used for objects and arrays.
 
 ## Transformation
-This actor enables you to do arbitrary data transformations before and after deduplication via `preDedupTransformFunction` and `postDedupTransformFunction`.
+Perform arbitrary data transformations before and after deduplication with `preDedupTransformFunction` and `postDedupTransformFunction`. These functions take an array of items and return a modified array.
 
-These functions simply take the array of items and should return array of items. You don't need to necessarily return the same amount of items (can filter some out or add new ones).
-
-You can access an object with helper variables, currently containing the [Apify SDK reference](https://sdk.apify.com/docs/api/apify)
-
-The default transformation does nothing with the items:
-```javascript
-(items, { Apify, customInputData }) => {
-    return items;
-}
-```
-
-In case of `dedup-as-loading` mode, you only have access to the items of the specific batch.
-But you can also access `datasetId` and `datasetOffset` parameters as each batch is only from one dataset.
-```javascript
-(items, { Apify, datasetId, datasetOffset, customInputData }) => {
-    return items;
-}
-```
-
-## Input
-Detailed INPUT table with description can be found on the [actor's public page](https://apify.com/lukaskrivka/dedup-datasets/input-schema).
-
-## Changelog
-Check the list of past updates [here](https://github.com/metalwarrior665/actor-dedup-datasets/blob/master/CHANGELOG.md)
+Access helper variables and the Apify SDK reference within transformation functions. Customize transformations to suit your needs, whether filtering, adding, or modifying items.
 
